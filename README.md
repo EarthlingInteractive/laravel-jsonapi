@@ -1,7 +1,11 @@
 JSON API helpers for Laravel 5
 =====
 
-Make it a breeze to create a [jsonapi.org](http://jsonapi.org/) compliant API with Laravel 5.
+[![Build Status](https://travis-ci.org/EarthlingInteractive/laravel-jsonapi.svg?branch=master)](https://travis-ci.org/EarthlingInteractive/laravel-jsonapi)
+
+Make it a breeze to create a [jsonapi.org](http://jsonapi.org/) compliant API with Laravel 5. 
+
+Code forked from echo-it/laravel-jsonapi project by Ronni Egeriis Persson.
 
 Installation
 -----
