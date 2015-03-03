@@ -1,4 +1,4 @@
-<?php namespace EchoIt\JsonApi;
+<?php namespace EarthlingInteractive\JsonApi;
 
 use Illuminate\Http\JsonResponse;
 

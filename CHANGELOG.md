@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v4.0.0
+------
+
+ 1. Renamed project to EarthlingInteractive/laravel-jsonapi
+
+
 v3.1.3
 ------
 

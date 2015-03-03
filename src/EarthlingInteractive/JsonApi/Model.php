@@ -1,4 +1,4 @@
-<?php namespace EchoIt\JsonApi;
+<?php namespace EarthlingInteractive\JsonApi;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as BaseModel;

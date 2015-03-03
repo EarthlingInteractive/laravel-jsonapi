@@ -1,4 +1,4 @@
-<?php namespace EchoIt\JsonApi;
+<?php namespace EarthlingInteractive\JsonApi;
 
 /**
  * A class used to represented a client request to the API.

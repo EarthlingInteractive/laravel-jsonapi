@@ -1,6 +1,6 @@
 <?php
 
-use EchoIt\JsonApi\Response;
+use EarthlingInteractive\JsonApi\Response;
 
 class ResponseTest extends PHPUnit_Framework_TestCase
 {

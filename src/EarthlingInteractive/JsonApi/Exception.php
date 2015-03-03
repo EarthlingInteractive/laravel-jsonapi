@@ -1,4 +1,4 @@
-<?php namespace EchoIt\JsonApi;
+<?php namespace EarthlingInteractive\JsonApi;
 
 /**
  * JsonApi\Exception represents an Exception that can be thrown where a JSON response may be expected.

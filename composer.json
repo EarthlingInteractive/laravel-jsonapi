@@ -1,5 +1,5 @@
 {
-    "name": "echo-it/laravel-jsonapi",
+    "name": "EarthlingInteractive/laravel-jsonapi",
     "license": "MIT",
     "authors": [
         {
@@ -23,7 +23,7 @@
     },
     "autoload": {
         "psr-0": {
-            "EchoIt\\JsonApi\\": "src/"
+            "EarthlingInteractive\\JsonApi\\": "src/"
         }
     }
 }

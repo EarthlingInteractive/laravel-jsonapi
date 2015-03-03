@@ -1,8 +1,8 @@
 <?php
 
-use EchoIt\JsonApi\Request;
-use EchoIt\JsonApi\Response;
-use EchoIt\JsonApi\Handler;
+use EarthlingInteractive\JsonApi\Request;
+use EarthlingInteractive\JsonApi\Response;
+use EarthlingInteractive\JsonApi\Handler;
 
 class HandlerWithGETSupport extends Handler
 {
@@ -17,9 +17,9 @@ class HandlerTest extends PHPUnit_Framework_TestCase
     public function testMockInstanceWithNoGETSupport()
     {
         $req = new Request('http://www.example.com/', 'GET');
-        $stub = $this->getMockForAbstractClass('EchoIt\JsonApi\Handler', [$req]);
+        $stub = $this->getMockForAbstractClass('EarthlingInteractive\JsonApi\Handler', [$req]);
 
-        $this->setExpectedException('EchoIt\JsonApi\Exception');
+        $this->setExpectedException('EarthlingInteractive\JsonApi\Exception');
         $stub->fulfillRequest();
     }
 
@@ -29,7 +29,7 @@ class HandlerTest extends PHPUnit_Framework_TestCase
         $handler = new HandlerWithGETSupport($req);
         $handlerResult = $handler->fulfillRequest();
 
-        $this->assertInstanceOf('EchoIt\JsonApi\Response', $handlerResult);
+        $this->assertInstanceOf('EarthlingInteractive\JsonApi\Response', $handlerResult);
     }
 
     public function testHandlerUnsupportedRequest()
@@ -37,7 +37,7 @@ class HandlerTest extends PHPUnit_Framework_TestCase
         $req = new Request('http://www.example.com/', 'PUT', null);
         $handler = new HandlerWithGETSupport($req);
 
-        $this->setExpectedException('EchoIt\JsonApi\Exception');
+        $this->setExpectedException('EarthlingInteractive\JsonApi\Exception');
         $handler->fulfillRequest();
     }
 }

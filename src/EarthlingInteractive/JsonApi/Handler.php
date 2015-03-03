@@ -1,4 +1,4 @@
-<?php namespace EchoIt\JsonApi;
+<?php namespace EarthlingInteractive\JsonApi;
 
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\Paginator;
@@ -315,8 +315,8 @@ abstract class Handler
      * Function to handle sorting requests. 
      * 
      * @param  array $cols list of column names to sort on
-     * @param  EchoIt\JsonApi\Model $model
-     * @return EchoIt\JsonApi\Model
+     * @param  EarthlingInteractive\JsonApi\Model $model
+     * @return EarthlingInteractive\JsonApi\Model
      */
     protected function handleSortRequest($cols, $model)
     {
@@ -380,8 +380,8 @@ abstract class Handler
     /**
      * Function to handle pagination requests. 
      * 
-     * @param  EchoIt\JsonApi\Request $request
-     * @param  EchoIt\JsonApi\Model $model
+     * @param  EarthlingInteractive\JsonApi\Request $request
+     * @param  EarthlingInteractive\JsonApi\Model $model
      * @param integer $total the total number of records
      * @return Illuminate\Pagination\LengthAwarePaginator
      */
@@ -413,8 +413,8 @@ abstract class Handler
      * Function to handle filtering requests. 
      * 
      * @param  array $filters key=>value pairs of column and value to filter on
-     * @param  EchoIt\JsonApi\Model $model
-     * @return EchoIt\JsonApi\Model
+     * @param  EarthlingInteractive\JsonApi\Model $model
+     * @return EarthlingInteractive\JsonApi\Model
      */
     protected function handleFilterRequest($filters, $model) {
         foreach($filters as $key=>$value) {
@@ -427,9 +427,9 @@ abstract class Handler
      * Default handling of GET request. 
      * Must be called explicitly in handleGet function.
      * 
-     * @param  EchoIt\JsonApi\Request $request
-     * @param  EchoIt\JsonApi\Model $model
-     * @return EchoIt\JsonApi\Model|Illuminate\Pagination\LengthAwarePaginator
+     * @param  EarthlingInteractive\JsonApi\Request $request
+     * @param  EarthlingInteractive\JsonApi\Model $model
+     * @return EarthlingInteractive\JsonApi\Model|Illuminate\Pagination\LengthAwarePaginator
      */
     protected function handleGetDefault(Request $request, $model)
     {
@@ -470,9 +470,9 @@ abstract class Handler
      * Default handling of POST request. 
      * Must be called explicitly in handlePost function.
      * 
-     * @param  EchoIt\JsonApi\Request $request
-     * @param  EchoIt\JsonApi\Model $model
-     * @return EchoIt\JsonApi\Model
+     * @param  EarthlingInteractive\JsonApi\Request $request
+     * @param  EarthlingInteractive\JsonApi\Model $model
+     * @return EarthlingInteractive\JsonApi\Model
      */
     public function handlePostDefault(Request $request, $model)
     {
@@ -495,9 +495,9 @@ abstract class Handler
      * Default handling of PUT request. 
      * Must be called explicitly in handlePut function.
      * 
-     * @param  EchoIt\JsonApi\Request $request
-     * @param  EchoIt\JsonApi\Model $model
-     * @return EchoIt\JsonApi\Model
+     * @param  EarthlingInteractive\JsonApi\Request $request
+     * @param  EarthlingInteractive\JsonApi\Model $model
+     * @return EarthlingInteractive\JsonApi\Model
      */
     public function handlePutDefault(Request $request, $model)
     {
@@ -531,9 +531,9 @@ abstract class Handler
      * Default handling of DELETE request. 
      * Must be called explicitly in handleDelete function.
      * 
-     * @param  EchoIt\JsonApi\Request $request
-     * @param  EchoIt\JsonApi\Model $model
-     * @return EchoIt\JsonApi\Model
+     * @param  EarthlingInteractive\JsonApi\Request $request
+     * @param  EarthlingInteractive\JsonApi\Model $model
+     * @return EarthlingInteractive\JsonApi\Model
      */
     public function handleDeleteDefault(Request $request, $model)
     {
