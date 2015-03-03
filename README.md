@@ -6,7 +6,7 @@ Make it a breeze to create a [jsonapi.org](http://jsonapi.org/) compliant API wi
 Installation
 -----
 
-1. Add `EarthlingInteractive/laravel-jsonapi` to your composer.json dependency list
+1. Add `earthling-interactive/laravel-jsonapi` to your composer.json dependency list
 
 3. Run `composer update`.
 
