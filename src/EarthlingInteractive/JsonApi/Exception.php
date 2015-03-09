@@ -13,9 +13,10 @@ class Exception extends \Exception
     /**
      * Constructor.
      *
-     * @param string  $message        The Exception message to throw
-     * @param int     $code           The Exception code
-     * @param int     $httpStatusCode HTTP status code which can be used for broken request
+     * @param string  $message         The Exception message to throw
+     * @param int     $code            The Exception code
+     * @param int     $httpStatusCode  HTTP status code which can be used for broken request
+     * @param array   $additionalAttrs Any addition attributes to include in the response
      */
     public function __construct($message = '', $code = 0, $httpStatusCode = 500, array $additionalAttrs = array())
     {
