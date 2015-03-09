@@ -495,8 +495,10 @@ abstract class Handler
         try {
             if ($request->pageNumber && empty($request->id)) {
                 $results = $this->handlePaginationRequest($request, $model, $total);
-            } else {
+            } else if(!empty($request->id)) {
                 $results = $model->find($request->id);
+            } else {
+                $results = $model->get();
             }
         } catch (QueryException $e) {
             throw new Exception(
