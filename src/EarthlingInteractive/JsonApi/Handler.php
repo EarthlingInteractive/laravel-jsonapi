@@ -490,15 +490,13 @@ abstract class Handler
                 }
                 $model = $this->handleSortRequest($request->sort, $model);
             }
-        } else {
-            $model = $model->where('id', '=', $request->id);
         }
         
         try {
             if ($request->pageNumber && empty($request->id)) {
                 $results = $this->handlePaginationRequest($request, $model, $total);
             } else {
-                $results = $model->get();
+                $results = $model->find($request->id);
             }
         } catch (QueryException $e) {
             throw new Exception(
