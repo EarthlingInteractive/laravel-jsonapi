@@ -249,6 +249,7 @@ abstract class Handler
             case 'DELETE':
                 return BaseResponse::HTTP_NO_CONTENT;
             case 'GET':
+            case 'OPTIONS':
                 return BaseResponse::HTTP_OK;
         }
 
@@ -443,6 +444,27 @@ abstract class Handler
             $model = $model->where($key, '=', $value);
         }
         return $model;
+    }
+
+    /**
+     * On OPTIONS requests, returns Allow header with the methods for current Handler.
+     *
+     * @param EarthlingInteractive\JsonApi\Request $request
+     * @return EarthlingInteractive\JsonApi\Response
+     */
+    protected function handleOptions($request)
+    {
+        $allowedMethods = [];
+        $methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+        foreach ($methods as $method) {
+            if ($this->supportsMethod($method)) {
+                $allowedMethods[] = $method;
+            }
+        }
+
+        $headers = ['Allow' => implode(',', $allowedMethods)];
+        $response = new Response(null, static::successfulHttpStatusCode($this->request->method), $headers);
+        return $response;
     }
     
     /**
