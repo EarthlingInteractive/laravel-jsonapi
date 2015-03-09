@@ -29,15 +29,24 @@ class Response
     protected $httpStatusCode;
 
     /**
+     * Response headers
+     *
+     * @var array
+     */
+    protected $headers = ['Content-Type' => 'application/vnd.api+json'];
+
+    /**
      * Constructor
      *
      * @param array|object $body
      * @param integer $httpStatusCode
+     * @param array $headers
      */
-    public function __construct($body, $httpStatusCode = 200)
+    public function __construct($body, $httpStatusCode = 200, $headers = array())
     {
         $this->body = $body;
         $this->httpStatusCode = $httpStatusCode;
+        $this->headers = array_merge($this->headers, $headers);
     }
 
     /**
@@ -67,6 +76,6 @@ class Response
         return new JsonResponse(array_merge(
             [ $bodyKey => $this->body ],
             array_filter($this->responseData)
-        ), $this->httpStatusCode, ['Content-Type' => 'application/vnd.api+json'], $options);
+        ), $this->httpStatusCode, $this->headers, $options);
     }
 }
