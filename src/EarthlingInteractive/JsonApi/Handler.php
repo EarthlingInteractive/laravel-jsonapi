@@ -34,13 +34,6 @@ abstract class Handler
     const ERROR_RESERVED_9 = 512;
 
     /**
-     * List of relations that can be included in response.
-     * (eg. 'friend' could be included with ?include=friend)
-     * @var array
-     */
-    protected static $exposedRelations = [];
-
-    /**
      * Constructor.
      *
      * @param Request $request
@@ -93,26 +86,27 @@ abstract class Handler
         } elseif ($models instanceof LengthAwarePaginator) {
             $items = new Collection($models->items());
             foreach ($items as $model) {
-                $model->load(static::$exposedRelations);
+                $model->load($model->exposedRelations);
             }
             
             $response = new Response($items, static::successfulHttpStatusCode($this->request->method));
             
             $response->links = $this->getPaginationLinks($models);
-            $response->included = $this->getLinkedModels($items);
+            $response->included = $this->getIncludedModels($items);
             $response->errors = $this->getNonBreakingErrors();
         } else {
+
             if ($models instanceof Collection) {
                 foreach ($models as $model) {
-                    $model->load(static::$exposedRelations);
+                    $model->load($model->exposedRelations);
                 }
             } else {
-                $models->load(static::$exposedRelations);
+                $models->load($models->exposedRelations);
             }
             
             $response = new Response($models, static::successfulHttpStatusCode($this->request->method));
         
-            $response->included = $this->getLinkedModels($models);
+            $response->included = $this->getIncludedModels($models);
             $response->errors = $this->getNonBreakingErrors();
         }
 
@@ -121,22 +115,29 @@ abstract class Handler
 
     /**
      * Returns which requested linked resources are available.
-     *
+     * @param array $exposedRelations
      * @return array
      */
-    protected function exposedRelationsFromRequest()
+    protected function exposedRelationsFromRequest($exposedRelations)
     {
-        return array_intersect(static::$exposedRelations, $this->request->include);
+        $available = [];
+        foreach($this->request->include as $include) {
+            $pieces = explode(".", $include);
+            if(in_array($pieces[0], $exposedRelations)) {
+                $available[] = $include;
+            }
+        }
+        return $available;
     }
 
     /**
      * Returns which of the requested linked resources are not available.
-     *
+     * @param array $exposedRelations
      * @return array
      */
-    protected function unknownRelationsFromRequest()
+    protected function unknownRelationsFromRequest($exposedRelations)
     {
-        return array_diff($this->request->include, static::$exposedRelations);
+        return array_diff($this->request->include, $exposedRelations);
     }
 
     /**
@@ -145,47 +146,58 @@ abstract class Handler
      * @param  Illuminate\Database\Eloquent\Collection|JsonApi\Model $models
      * @return array
      */
-    protected function getLinkedModels($models)
+    protected function getIncludedModels($models)
     {
         $links = new Collection();
         $models = $models instanceof Collection ? $models : [$models];
 
         foreach ($models as $model) {
-            foreach ($this->exposedRelationsFromRequest() as $relationName) {
-                $value = static::getModelsForRelation($model, $relationName);
+            foreach ($this->exposedRelationsFromRequest($model->exposedRelations) as $relationName) {
+                $relationshipNamePieces = explode(".", $relationName);
+                $value = static::getModelsForRelation($model, $relationshipNamePieces[0]);
 
                 if (is_null($value)) {
                     continue;
                 }
 
                 foreach ($value as $obj) {
-                    
-                    // Check whether the object is already included in the response on it's ID
-                    $duplicate = false;
-                    $items = $links->where('id', $obj->getKey());
-                    if (count($items) > 0) {
-                        foreach ($items as $item) {
-                            if ($item->getTable() === $obj->getTable()) {
-                                $duplicate = true;
-                                break;
+                    $obj->load($obj->exposedRelations);
+                    if(isset($relationshipNamePieces[1])) {
+                        $subValue = static::getModelsForRelation($obj, $relationshipNamePieces[1]);
+                        foreach ($subValue as $subObj) {
+                            if(!$this->isModelInCollection($subObj, $links)) {
+                                $links->push($subObj);
                             }
                         }
-                        if ($duplicate) {
-                            continue;
+                    } else {
+                        if(!$this->isModelInCollection($obj, $links)) {
+                            $links->push($obj);
                         }
                     }
-                    
-                    //add type property
-                    $attributes = $obj->getAttributes();
-                    $attributes['type'] = $obj->getTable();
-                    $obj->setRawAttributes($attributes);
-
-                    $links->push($obj);
                 }
             }
         }
 
         return $links->toArray();
+    }
+
+    /**
+     * Checks if given model/result is in Collection already
+     * by checking id and table.
+     * @param Model $obj
+     * @param Collection $links
+     * @return bool
+     */
+    protected function isModelInCollection($obj, $links) {
+        $items = $links->where('id', $obj->getKey());
+        if (count($items) > 0) {
+            foreach ($items as $item) {
+                if ($item->getTable() === $obj->getTable()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     /**
@@ -220,16 +232,6 @@ abstract class Handler
     protected function getNonBreakingErrors()
     {
         $errors = [];
-
-        $unknownRelations = $this->unknownRelationsFromRequest();
-        if (count($unknownRelations) > 0) {
-            $errors[] = [
-                'code' => static::ERROR_UNKNOWN_LINKED_RESOURCES,
-                'title' => 'Unknown linked resources requested',
-                'description' => 'These linked resources are not available: ' . implode(', ', $unknownRelations)
-            ];
-        }
-
         return $errors;
     }
 

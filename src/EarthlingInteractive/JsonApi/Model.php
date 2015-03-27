@@ -19,6 +19,14 @@ class Model extends \Eloquent
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
+     * List of relations that can be included in response.
+     * (eg. 'friend' could be included with ?include=friend)
+     *
+     * @var array
+     */
+    public $exposedRelations = [];
+
+    /**
      * Convert the model instance to an array. This method overrides that of
      * Eloquent to prevent relations to be serialize into output array.
      *
