@@ -296,7 +296,7 @@ abstract class Handler
         }
 
         if (! $relationModels instanceof Collection) {
-            return [ $relationModels ];
+            return new Collection([ $relationModels ]);
         }
         return $relationModels;
     }
@@ -552,6 +552,12 @@ abstract class Handler
                 $results = $this->handlePaginationRequest($request, $model, $total);
             } else if(!empty($request->id)) {
                 $results = $model->find($request->id);
+                if(!empty($request->relation)) {
+                    if(!in_array($request->relation, $model->exposedRelations)) {
+                        return null;
+                    }
+                    $results = $this->getModelsForRelation($results, $request->relation);
+                }
             } else {
                 $results = $model->get();
             }

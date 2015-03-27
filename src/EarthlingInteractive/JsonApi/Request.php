@@ -72,6 +72,12 @@ class Request
     public $pageSize = 50;
 
     /**
+     * Specifies a relation
+     * @var string
+     */
+    public $relation;
+
+    /**
      * Constructor.
      *
      * @param string $url
@@ -81,10 +87,10 @@ class Request
      * @param array  $include
      * @param array  $sort
      * @param array  $filter
-     * @param integer $pageNumber
-     * @param integer $pageSize
+     * @param array $page
+     * @param string $relation
      */
-    public function __construct($url, $method, $id = null, $content = null, $include = [], $sort = [], $filter = [], $pageNumber = null, $pageSize = null)
+    public function __construct($url, $method, $id = null, $content = null, $include = [], $sort = [], $filter = [], $page = [], $relation = null)
     {
         $this->url = $url;
         $this->method = $method;
@@ -93,6 +99,16 @@ class Request
         $this->include = $include ?: [];
         $this->sort = $sort ?: [];
         $this->filter = $filter ?: [];
+        $this->relation = $relation;
+
+        $pageSize = null;
+        $pageNumber = null;
+        if($page) {
+            if(!empty($page['size']) && !empty($page['number'])) {
+                $pageSize = $page['size'];
+                $pageNumber = $page['number'];
+            }
+        }
         
         $this->pageNumber = $pageNumber ?: null;
         if ($pageSize) {
