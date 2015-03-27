@@ -33,10 +33,11 @@ abstract class Handler
     const ERROR_RESERVED_8 = 256;
     const ERROR_RESERVED_9 = 512;
 
-    /*
-    * List of relations that can be included in response.
-    * (eg. 'friend' could be included with ?include=friend)
-    */
+    /**
+     * List of relations that can be included in response.
+     * (eg. 'friend' could be included with ?include=friend)
+     * @var array
+     */
     protected static $exposedRelations = [];
 
     /**
@@ -93,26 +94,26 @@ abstract class Handler
         } elseif ($models instanceof LengthAwarePaginator) {
             $items = new Collection($models->items());
             foreach ($items as $model) {
-                $model->load($this->exposedRelationsFromRequest());
+                $model->load(static::$exposedRelations);
             }
             
             $response = new Response($items, static::successfulHttpStatusCode($this->request->method));
             
             $response->links = $this->getPaginationLinks($models);
-            $response->linked = $this->getLinkedModels($items);
+            $response->included = $this->getLinkedModels($items);
             $response->errors = $this->getNonBreakingErrors();
         } else {
             if ($models instanceof Collection) {
                 foreach ($models as $model) {
-                    $model->load($this->exposedRelationsFromRequest());
+                    $model->load(static::$exposedRelations);
                 }
             } else {
-                $models->load($this->exposedRelationsFromRequest());
+                $models->load(static::$exposedRelations);
             }
             
             $response = new Response($models, static::successfulHttpStatusCode($this->request->method));
         
-            $response->linked = $this->getLinkedModels($models);
+            $response->included = $this->getLinkedModels($models);
             $response->errors = $this->getNonBreakingErrors();
         }
 
@@ -560,6 +561,7 @@ abstract class Handler
                 array('details' => $e->getMessage())
             );
         }
+
         return $results;
     }
     
