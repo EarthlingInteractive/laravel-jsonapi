@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v5.0.0
+------
+
+ 1. Updated code and docs for basic support for jsonapi 1.0.0.rc3 specs
+ 2. Lots of bug fixes
+
 v4.0.0
 ------
 

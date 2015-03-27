@@ -153,7 +153,7 @@ In few steps you can expose your models:
 
     use EarthlingInteractive\JsonApi\Model as ApiModel;
     
-    class user extends ApiModel {
+    class User extends ApiModel {
 		
         public $exposedRelations = ['friends'];
         
