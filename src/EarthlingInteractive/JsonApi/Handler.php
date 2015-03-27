@@ -356,9 +356,47 @@ abstract class Handler
         }
         return $model;
     }
+
+    /**
+     * Parses out any linkages in a resource object,
+     * converting them into specific ids and/or an array of to-many relationships
+     * @param array $resource
+     * @return array
+     */
+    protected function parseResourceLinkage($resource)
+    {
+        $toManyRelationShips = [];
+
+        foreach($resource['links'] as $key=>$link) {
+            if($key !== 'self' && $key !== 'related' ) {
+                if(isset($link['linkage'])) {
+                    $linkage = $link['linkage'];
+                    if(isset($linkage['id'])) {
+                        //create id field from linkage
+                        $resource[$key.'_id'] = $linkage['id'];
+                    } else {
+                        //pull out to-many relationships to be dealt with later.
+                        foreach($linkage as $relation) {
+                            if(!isset($toManyRelationShips[$key])) {
+                                $toManyRelationShips[$key] = [];
+                            }
+                            $toManyRelationShips[$key][] = $relation;
+                        }
+                    }
+                }
+            }
+        }
+
+        if(!empty($toManyRelationShips)) {
+            $resource['to-many'] = $toManyRelationShips;
+        }
+        return $resource;
+    }
     
     /**
-     * Parses content from request into an array of values.
+     * Parses and validates content from request into an array of
+     * associative arrays representing database resources. Strips out
+     * any properties that are not to be saved, like type and links.
      *
      * @param  string $content
      * @param  string $type the type the content is expected to be.
@@ -379,23 +417,37 @@ abstract class Handler
         }
         
         $data = $content['data'];
-        if (!isset($data['type'])) {
-            throw new Exception(
-                '"type" parameter not set in request.',
-                static::ERROR_SCOPE | static::ERROR_INVALID_ATTRS,
-                BaseResponse::HTTP_BAD_REQUEST
-            );
+        $resources = [];
+        if(isset($data[0])) {
+            $resources = $data;
+        } else {
+            $resources = [$data];
         }
-        if ($data['type'] !== $type) {
-            throw new Exception(
-                '"type" parameter is not valid. Expecting ' . $type,
-                static::ERROR_SCOPE | static::ERROR_INVALID_ATTRS,
-                BaseResponse::HTTP_CONFLICT
-            );
+        foreach($resources as $key => $resource) {
+            if (!isset($resource['type'])) {
+                throw new Exception(
+                    '"type" parameter not set in request.',
+                    static::ERROR_SCOPE | static::ERROR_INVALID_ATTRS,
+                    BaseResponse::HTTP_BAD_REQUEST
+                );
+            }
+            if ($resource['type'] !== $type) {
+                throw new Exception(
+                    '"type" parameter is not valid. Expecting ' . $type,
+                    static::ERROR_SCOPE | static::ERROR_INVALID_ATTRS,
+                    BaseResponse::HTTP_CONFLICT
+                );
+            }
+
+            //convert links into ids
+            if (isset($resource['links'])) {
+                $resource = $this->parseResourceLinkage($resource);
+                unset($resource['links']);
+            }
+            unset($resource['type']);
+            $resources[$key] = $resource;
         }
-        unset($data['type']);
-        
-        return $data;
+        return $resources;
     }
     
     /**
@@ -522,17 +574,23 @@ abstract class Handler
      */
     public function handlePostDefault($request, $model)
     {
-        $values = $this->parseRequestContent($request->content, $model->getTable());
-        $model->fill($values);
+        $resources = $this->parseRequestContent($request->content, $model->getTable());
 
-        if (!$model->save()) {
-            throw new Exception(
-                'An unknown error occurred',
-                static::ERROR_SCOPE | static::ERROR_UNKNOWN_ID,
-                BaseResponse::HTTP_INTERNAL_SERVER_ERROR
-            );
+        foreach($resources as $resource) {
+            if(isset($resource['to-many'])) {
+                unset($resource['to-many']);
+            }
+            $model->fill($resource);
+
+            if (!$model->save()) {
+                throw new Exception(
+                    'An unknown error occurred',
+                    static::ERROR_SCOPE | static::ERROR_UNKNOWN_ID,
+                    BaseResponse::HTTP_INTERNAL_SERVER_ERROR
+                );
+            }
         }
-        
+
         return $model;
     }
     
@@ -556,21 +614,27 @@ abstract class Handler
             );
         }
 
-        $updates = $this->parseRequestContent($request->content, $model->getTable());
-        
         $model = $model::find($request->id);
         if (is_null($model)) {
             return null;
         }
 
-        $model->fill($updates);
+        $resources = $this->parseRequestContent($request->content, $model->getTable());
+        foreach($resources as $resource) {
+            if(isset($resource['to-many'])) {
+                $toManyRelationships = $resource['to-many'];
+                //todo: update these relationships....
+                unset($resource['to-many']);
+            }
+            $model->fill($resource);
 
-        if (!$model->save()) {
-            throw new Exception(
-                'An unknown error occurred',
-                static::ERROR_SCOPE | static::ERROR_UNKNOWN_ID,
-                BaseResponse::HTTP_INTERNAL_SERVER_ERROR
-            );
+            if (!$model->save()) {
+                throw new Exception(
+                    'An unknown error occurred',
+                    static::ERROR_SCOPE | static::ERROR_UNKNOWN_ID,
+                    BaseResponse::HTTP_INTERNAL_SERVER_ERROR
+                );
+            }
         }
         
         return $model;
