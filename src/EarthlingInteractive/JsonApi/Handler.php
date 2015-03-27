@@ -246,10 +246,11 @@ abstract class Handler
             
             case 'POST':
                 return BaseResponse::HTTP_CREATED;
-            case 'PUT':
             case 'DELETE':
                 return BaseResponse::HTTP_NO_CONTENT;
             case 'GET':
+            case 'PUT':
+            case 'PATCH':
             case 'OPTIONS':
                 return BaseResponse::HTTP_OK;
         }
@@ -594,6 +595,20 @@ abstract class Handler
         }
 
         return $model;
+    }
+
+    /**
+     * Default handling of PATCH request.
+     * Must be called explicitly in handlePatch function.
+     *
+     * @param  EarthlingInteractive\JsonApi\Request $request
+     * @param  EarthlingInteractive\JsonApi\Model $model
+     * @throws Exception if database request fails
+     * @return EarthlingInteractive\JsonApi\Model
+     */
+    public function handlePatchDefault($request, $model)
+    {
+        return $this->handlePutDefault($request, $model);
     }
     
     /**
