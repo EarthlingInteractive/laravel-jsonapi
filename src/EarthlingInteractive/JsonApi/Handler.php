@@ -65,7 +65,6 @@ abstract class Handler
      * Fulfill the API request and return a response.
      *
      * @throws Exception if request method is not allowed
-     * @throws Exception if provided id is not known
      * @return Response
      */
     public function fulfillRequest()
@@ -82,11 +81,11 @@ abstract class Handler
         $models = $this->{$methodName}($this->request);
 
         if (is_null($models)) {
-            throw new Exception(
-                'Unknown ID',
-                static::ERROR_SCOPE | static::ERROR_UNKNOWN_ID,
-                BaseResponse::HTTP_NOT_FOUND
-            );
+            $body = null;
+            if (empty($this->request->id)) {
+                $body = [];
+            }
+            return new Response($body, static::successfulHttpStatusCode($this->request->method));
         }
         
         if ($models instanceof Response) {
