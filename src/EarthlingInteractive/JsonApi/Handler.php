@@ -632,7 +632,11 @@ abstract class Handler
 
         $model = $model::find($request->id);
         if (is_null($model)) {
-            return null;
+            throw new Exception(
+                'Could not find requested resource',
+                static::ERROR_SCOPE | static::ERROR_MISSING_DATA,
+                BaseResponse::HTTP_NOT_FOUND
+            );
         }
 
         $resources = $this->parseRequestContent($request->content, $model->getTable());
