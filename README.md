@@ -3,7 +3,7 @@ JSON API helpers for Laravel 5
 
 [![Build Status](https://travis-ci.org/EarthlingInteractive/laravel-jsonapi.svg?branch=master)](https://travis-ci.org/EarthlingInteractive/laravel-jsonapi)
 
-Make it a breeze to create a [jsonapi.org](http://jsonapi.org/) compliant API with Laravel 5. 
+Make it a breeze to create a [jsonapi.org](http://jsonapi.org/) RC3 compliant API with Laravel 5. 
 
 Code forked from echo-it/laravel-jsonapi project by Ronni Egeriis Persson.
 
@@ -32,7 +32,9 @@ In few steps you can expose your models:
     In this example, we use a generic route for all models and HTTP methods:
 
     ```php
-    Route::any('{model}/{id?}', 'ApiController@handleRequest');
+    Route::options('api/{model}/{id?}', 'ApiController@handleRequest');
+	Route::any('api/{model}/{id?}', 'ApiController@handleRequest');
+	Route::any('api/{model}/{id}/links/{relation}', 'ApiController@handleRequest');
     ```
 
 2. **Create your controller to handle the request**
@@ -41,58 +43,51 @@ In few steps you can expose your models:
 
     ```php
 		 <?php namespace App\Http\Controllers;
+		use EarthlingInteractive\JsonApi\Request as ApiRequest;
+		use EarthlingInteractive\JsonApi\ErrorResponse as ApiErrorResponse;
+		use EarthlingInteractive\JsonApi\Exception as ApiException;
+		use Request;
 
-        use EarthlingInteractive\JsonApi\Request as ApiRequest;
-        use EarthlingInteractive\JsonApi\ErrorResponse as ApiErrorResponse;
-        use EarthlingInteractive\JsonApi\Exception as ApiException;
-        use Request;
+		class ApiController extends Controller
+		{
+			public function handleRequest($modelName, $id = null, $relation = null)
+			{
+				/**
+				 * Create handler name from model name
+				 * @var string
+				 */
+				$handlerClass = 'App\\Handlers\\' . ucfirst($modelName) . 'Handler';
 
-        class ApiController extends Controller
-        {
-            public function handleRequest($modelName, $id = null)
-            {
-                /**
-                 * Create handler name from model name
-                 * @var string
-                 */
-                $handlerClass = 'App\\Handlers\\' . ucfirst($modelName) . 'Handler';
-        
-                if (class_exists($handlerClass)) {
-                    $url = Request::url();
-                    $method = Request::method();
-                    $include = ($i = Request::input('include')) ? explode(',', $i) : $i;
-                    $sort = ($i = Request::input('sort')) ? explode(',', $i) : $i;
-                    $filter = ($i = Request::except('sort', 'include', 'page')) ? $i : [];
-                    $content = Request::getContent();
-                    
-                    $page = Request::input('page');
-                    $pageSize = null;
-                    $pageNumber = null;
-                    if($page) {
-                        if(is_array($page) && !empty($page['size']) && !empty($page['number'])) {
-                            $pageSize = $page['size'];
-                            $pageNumber = $page['number'];
-                        } else {
-                             return new ApiErrorResponse(400, 400, 'Expected page[size] and page[number]');
-                        }
-                    }
-                    $request = new ApiRequest(Request::url(), $method, $id, $content, $include, $sort, $filter, $pageNumber, $pageSize);
-                    $handler = new $handlerClass($request);
-        
-                    // A handler can throw EarthlingInteractive\JsonApi\Exception which must be gracefully handled to give proper response
-                    try {
-                        $res = $handler->fulfillRequest();
-                    } catch (ApiException $e) {
-                        return $e->response();
-                    }
-                    
-                    return $res->toJsonResponse();
-                }
-        
-                // If a handler class does not exist for requested model, it is not considered to be exposed in the API
-                return new ApiErrorResponse(404, 404, 'Entity not found');
-            }
-        }
+				if (class_exists($handlerClass)) {
+					$url = Request::url();
+					$method = Request::method();
+					$include = ($i = Request::input('include')) ? explode(',', $i) : $i;
+					$sort = ($i = Request::input('sort')) ? explode(',', $i) : $i;
+					$filter = ($i = Request::except('sort', 'include', 'page')) ? $i : [];
+					$content = Request::getContent();
+					
+					$page = Request::input('page');
+					if($page && !is_array($page) && (!empty($page['size']) || !empty($page['number']))) {
+						return new ApiErrorResponse(400, 400, 'Expected page[size] and page[number]');
+					}
+
+					$request = new ApiRequest(Request::url(), $method, $id, $content, $include, $sort, $filter, $page, $relation);
+					$handler = new $handlerClass($request);
+
+					// A handler can throw EchoIt\JsonApi\Exception which must be gracefully handled to give proper response
+					try {
+						$res = $handler->fulfillRequest();
+					} catch (ApiException $e) {
+						return $e->response();
+					}
+					
+					return $res->toJsonResponse();
+				}
+
+				// If a handler class does not exist for requested model, it is not considered to be exposed in the API
+				return new ApiErrorResponse(404, 404, 'Entity not found');
+			}
+		}
     ```
 
 3. **Create a handler for your model**
@@ -103,59 +98,71 @@ In few steps you can expose your models:
 
     * GET /users (ie. handleGet function)
     * GET /users/[id] (ie. handleGet function)
-    * PUT /users/[id] (ie. handlePut function)
+    * PATCH /users/[id] (ie. handlePatch function)
     
     Requests are automatically routed to appropriate handle functions.
 
     ```php
-      <?php namespace App\Handlers;
+        <?php namespace App\Handlers;
       
-      use Symfony\Component\HttpFoundation\Response;
-      use App\Models\User;
-      
-      use EarthlingInteractive\JsonApi\Exception as ApiException;
-      use EarthlingInteractive\JsonApi\Request as ApiRequest;
-      use EarthlingInteractive\JsonApi\Handler as ApiHandler;
-      use Request;
-      
-      /**
-       * Handles API requests for Users.
-       */
-      class UsersHandler extends ApiHandler
-      {
-          const ERROR_SCOPE = 1024;
+          use Symfony\Component\HttpFoundation\Response;
+          use App\Models\User;
           
-          /*
-          * List of relations that can be included in response.
-          * (eg. 'friend' could be included with ?include=friend)
-          */
-          protected static $exposedRelations = [];
+          use EarthlingInteractive\JsonApi\Exception as ApiException;
+          use EarthlingInteractive\JsonApi\Request as ApiRequest;
+          use EarthlingInteractive\JsonApi\Handler as ApiHandler;
+          use Request;
           
           /**
-           * Handles GET requests. 
-           * @param EarthlingInteractive\JsonApi\Request $request
-           * @return EarthlingInteractive\JsonApi\Model|Illuminate\Support\Collection|EarthlingInteractive\JsonApi\Response|Illuminate\Pagination\LengthAwarePaginator
+           * Handles API requests for Users.
            */
-          public function handleGet(ApiRequest $request)
+          class UsersHandler extends ApiHandler
           {
-              //you can use the default GET functionality, or override with your own 
-              return $this->handleGetDefault($request, new User);
+              const ERROR_SCOPE = 1024;
+              
+              /**
+               * Handles GET requests. 
+               * @param EarthlingInteractive\JsonApi\Request $request
+               * @return EarthlingInteractive\JsonApi\Model|Illuminate\Support\Collection|EarthlingInteractive\JsonApi\Response|Illuminate\Pagination\LengthAwarePaginator
+               */
+              public function handleGet(ApiRequest $request)
+              {
+                  //you can use the default GET functionality, or override with your own 
+                  return $this->handleGetDefault($request, new User);
+              }
+              
+              /**
+               * Handles PATCH requests. 
+               * @param EarthlingInteractive\JsonApi\Request $request
+               * @return EarthlingInteractive\JsonApi\Model|Illuminate\Support\Collection|EarthlingInteractive\JsonApi\Response
+               */
+              public function handlePatch(ApiRequest $request)
+              {
+                  //you can use the default PATCH functionality, or override with your own
+                  return $this->handlePatchDefault($request, new User);
+              }
           }
-          
-          /**
-           * Handles PUT requests. 
-           * @param EarthlingInteractive\JsonApi\Request $request
-           * @return EarthlingInteractive\JsonApi\Model|Illuminate\Support\Collection|EarthlingInteractive\JsonApi\Response
-           */
-          public function handlePut(ApiRequest $request)
-          {
-              //you can use the default PUT functionality, or override with your own
-              return $this->handlePutDefault($request, new User);
-          }
-      }
     ```
 
-    > **Note:** Extend your models from `EarthlingInteractive\JsonApi\Model` rather than `Eloquent` to get the proper response for linked resources.
+
+
+**Note:** Extend your models from `EarthlingInteractive\JsonApi\Model` rather than `Eloquent` to get the proper response for linked resources. In your model, you can define which relationships should be exposed: 
+
+    ```php
+    <?php namespace App\Models;
+
+    use EarthlingInteractive\JsonApi\Model as ApiModel;
+    
+    class user extends ApiModel {
+		
+        public $exposedRelations = ['friends'];
+        
+        public function friends()
+        {
+            return $this->hasMany('App\Models\Friend');
+        }
+    }
+    ```
 
 Current features
 -----
@@ -164,11 +171,10 @@ According to [jsonapi.org](http://jsonapi.org):
 
 * [Resource Representations](http://jsonapi.org/format/#document-structure-resource-representations) as resource objects
 * [Resource Relationships](http://jsonapi.org/format/#document-structure-resource-relationships)
-   * Only through [Inclusion of Linked Resources](http://jsonapi.org/format/#fetching-includes)
 * [Compound Documents](http://jsonapi.org/format/#document-structure-compound-documents)
 * [Sorting](http://jsonapi.org/format/#fetching-sorting)
 * [Filtering](http://jsonapi.org/format/#fetching-filtering)
-* [Pagination] (http://jsonapi.org/format/#fetching-pagination)
+* [Pagination](http://jsonapi.org/format/#fetching-pagination)
 
 The features in the Handler class are each in their own function (eg. handlePaginationRequest, handleSortRequest, etc.), so you can easily override them with your own behaviour if desired. 
 	
@@ -176,7 +182,7 @@ The features in the Handler class are each in their own function (eg. handlePagi
 Wishlist
 -----
 
-* [Relationship URLs](http://jsonapi.org/format/#document-structure-resource-relationships)  e.g. /users/[id]/links/friend
+* [Relationship URLs](http://jsonapi.org/format/#document-structure-resource-relationships)  e.g. /users/[id]/links/friends
 * [Resource URLs](http://jsonapi.org/format/#document-structure-resource-urls)
 * [Updating Relationships](http://jsonapi.org/format/#crud-updating-relationships)
 * [Sparse Fieldsets](http://jsonapi.org/format/#fetching-sparse-fieldsets)
