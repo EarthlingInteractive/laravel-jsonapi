@@ -33,12 +33,6 @@ abstract class Handler
     const ERROR_RESERVED_8 = 256;
     const ERROR_RESERVED_9 = 512;
 
-    /*
-    * List of relations that can be included in response.
-    * (eg. 'friend' could be included with ?include=friend)
-    */
-    protected static $exposedRelations = [];
-
     /**
      * Constructor.
      *
@@ -63,9 +57,7 @@ abstract class Handler
     /**
      * Fulfill the API request and return a response.
      *
-     * @throws Exception if request method is not allowed
-     * @throws Exception if provided id is not known
-     * @return Response
+     * @return JsonApi\Response
      */
     public function fulfillRequest()
     {
@@ -99,9 +91,9 @@ abstract class Handler
             $response = new Response($items, static::successfulHttpStatusCode($this->request->method));
             
             $response->links = $this->getPaginationLinks($models);
-            $response->linked = $this->getLinkedModels($items);
+            $response->included = $this->getLinkedModels($items);
             $response->errors = $this->getNonBreakingErrors();
-        } else {
+        } else {            
             if ($models instanceof Collection) {
                 foreach ($models as $model) {
                     $model->load($this->exposedRelationsFromRequest());
@@ -112,7 +104,7 @@ abstract class Handler
             
             $response = new Response($models, static::successfulHttpStatusCode($this->request->method));
         
-            $response->linked = $this->getLinkedModels($models);
+            $response->included = $this->getLinkedModels($models);
             $response->errors = $this->getNonBreakingErrors();
         }
 
@@ -147,6 +139,7 @@ abstract class Handler
      */
     protected function getLinkedModels($models)
     {
+        $linked = [];
         $links = new Collection();
         $models = $models instanceof Collection ? $models : [$models];
 
@@ -445,27 +438,6 @@ abstract class Handler
         }
         return $model;
     }
-
-    /**
-     * On OPTIONS requests, returns Allow header with the methods for current Handler.
-     *
-     * @param EarthlingInteractive\JsonApi\Request $request
-     * @return EarthlingInteractive\JsonApi\Response
-     */
-    protected function handleOptions($request)
-    {
-        $allowedMethods = [];
-        $methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
-        foreach ($methods as $method) {
-            if ($this->supportsMethod($method)) {
-                $allowedMethods[] = $method;
-            }
-        }
-
-        $headers = ['Allow' => implode(',', $allowedMethods)];
-        $response = new Response(null, static::successfulHttpStatusCode($this->request->method), $headers);
-        return $response;
-    }
     
     /**
      * Default handling of GET request.
@@ -490,13 +462,13 @@ abstract class Handler
                 }
                 $model = $this->handleSortRequest($request->sort, $model);
             }
+        } else {
+            $model = $model->where('id', '=', $request->id);
         }
         
         try {
             if ($request->pageNumber && empty($request->id)) {
                 $results = $this->handlePaginationRequest($request, $model, $total);
-            } else if(!empty($request->id)) {
-                $results = $model->find($request->id);
             } else {
                 $results = $model->get();
             }

@@ -33,14 +33,14 @@ class Model extends \Eloquent
             }
 
             if ($value instanceof BaseModel) {
-                $relations[$relation] = array('id' => $value->getKey(), 'type' => $value->getTable());
+                $relations[$relation] = array('linkage' => array('id' => $value->getKey(), 'type' => $value->getTable()));
             } elseif ($value instanceof Collection) {
                 $relation = \str_plural($relation);
                 $items = [];
                 foreach ($value as $item) {
                     $items[] = array('id' => $item->getKey(), 'type' => $item->getTable());
                 }
-                $relations[$relation] = $items;
+                $relations[$relation] = array('linkage' => $items);
             }
         }
         
