@@ -32,7 +32,7 @@ In few steps you can expose your models:
     In this example, we use a route for any OPTION requests, a generic route for interacting with resources, and another route for interacting with resource relationships:
 
     ```php
-    	Route::options('api/{model}/{id?}', 'ApiController@handleRequest');
+	Route::options('api/{model}/{id?}', 'ApiController@handleRequest');
 	Route::any('api/{model}/{id?}', 'ApiController@handleRequest');
 	Route::any('api/{model}/{id}/links/{relation}', 'ApiController@handleRequest');
     ```
@@ -148,21 +148,21 @@ In few steps you can expose your models:
 
 **Note:** Extend your models from `EarthlingInteractive\JsonApi\Model` rather than `Eloquent` to get the proper response for linked resources. In your model, you can define which relationships should be exposed: 
 
-    ```php
-    <?php namespace App\Models;
+```php
+	<?php namespace App\Models;
 
-    use EarthlingInteractive\JsonApi\Model as ApiModel;
-    
-    class User extends ApiModel {
+	use EarthlingInteractive\JsonApi\Model as ApiModel;
+	
+	class User extends ApiModel {
 		
-        public $exposedRelations = ['friends'];
-        
-        public function friends()
-        {
-            return $this->hasMany('App\Models\Friend');
-        }
-    }
-    ```
+		public $exposedRelations = ['friends'];
+	
+		public function friends()
+		{
+		    return $this->hasMany('App\Models\Friend');
+		}
+	}
+```
 
 Current features
 -----
