@@ -76,21 +76,28 @@ class Request
      * @var string
      */
     public $relation;
+	
+	/**
+     * Specifies the resource fields, keyed by type, to return.
+     * @var array
+     */
+    public $fields;
 
     /**
      * Constructor.
      *
-     * @param string $url
-     * @param string $method
-     * @param int    $id
-     * @param mixed $content
-     * @param array  $include
-     * @param array  $sort
-     * @param array  $filter
-     * @param array $page
-     * @param string $relation
+     * @param string $url the full URL of the request
+     * @param string $method the HTTP method of the request
+     * @param int    $id optional an id of a specific requested resource
+     * @param mixed  $content optional content sent with the request, like data sent via POST or PUT
+     * @param array  $include optional list of related resources to load along with main results
+     * @param array  $sort optional list of fields to sort on
+     * @param array  $filter optional list of fields and values to filter on
+     * @param array  $page optional an array containing size and number to define pagination
+     * @param string $relation optional a name of a related resource to load
+	 * @param array  $fields optional list of specific fields to return in the results, keyed by type.
      */
-    public function __construct($url, $method, $id = null, $content = null, $include = [], $sort = [], $filter = [], $page = [], $relation = null)
+    public function __construct($url, $method, $id = null, $content = null, $include = [], $sort = [], $filter = [], $page = [], $relation = null, $fields = [])
     {
         $this->url = $url;
         $this->method = $method;
@@ -100,6 +107,7 @@ class Request
         $this->sort = $sort ?: [];
         $this->filter = $filter ?: [];
         $this->relation = $relation;
+		$this->fields = $fields;
 
         $pageSize = null;
         $pageNumber = null;
