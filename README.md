@@ -29,10 +29,10 @@ In few steps you can expose your models:
 
 1. **Create a route to direct the requests**
 
-    In this example, we use a generic route for all models and HTTP methods:
+    In this example, we use a route for any OPTION requests, a generic route for interacting with resources, and another route for interacting with resource relationships:
 
     ```php
-    Route::options('api/{model}/{id?}', 'ApiController@handleRequest');
+    	Route::options('api/{model}/{id?}', 'ApiController@handleRequest');
 	Route::any('api/{model}/{id?}', 'ApiController@handleRequest');
 	Route::any('api/{model}/{id}/links/{relation}', 'ApiController@handleRequest');
     ```
@@ -67,7 +67,7 @@ In few steps you can expose your models:
 					$content = Request::getContent();
 					
 					$page = Request::input('page');
-					if($page && !is_array($page) && (!empty($page['size']) || !empty($page['number']))) {
+					if($page && (!is_array($page) || empty($page['size']) || empty($page['number']))) {
 						return new ApiErrorResponse(400, 400, 'Expected page[size] and page[number]');
 					}
 
