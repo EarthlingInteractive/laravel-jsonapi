@@ -171,9 +171,10 @@ According to [jsonapi.org](http://jsonapi.org):
 
 * [Resource Representations](http://jsonapi.org/format/#document-structure-resource-representations) as resource objects
 * [Resource Relationships](http://jsonapi.org/format/#document-structure-resource-relationships)
+* [Relationship URLs](http://jsonapi.org/format/#document-structure-resource-relationships)  e.g. /users/[id]/links/friends
 * [Compound Documents](http://jsonapi.org/format/#document-structure-compound-documents)
 * [Sorting](http://jsonapi.org/format/#fetching-sorting)
-* [Filtering](http://jsonapi.org/format/#fetching-filtering)
+* [Filtering](http://jsonapi.org/format/#fetching-filtering) (Note: Doesn't use FILTER keyword. An example: /users?name=Joe)
 * [Pagination](http://jsonapi.org/format/#fetching-pagination)
 
 The features in the Handler class are each in their own function (eg. handlePaginationRequest, handleSortRequest, etc.), so you can easily override them with your own behaviour if desired. 
@@ -182,7 +183,6 @@ The features in the Handler class are each in their own function (eg. handlePagi
 Wishlist
 -----
 
-* [Relationship URLs](http://jsonapi.org/format/#document-structure-resource-relationships)  e.g. /users/[id]/links/friends
 * [Resource URLs](http://jsonapi.org/format/#document-structure-resource-urls)
 * [Updating Relationships](http://jsonapi.org/format/#crud-updating-relationships)
 * [Sparse Fieldsets](http://jsonapi.org/format/#fetching-sparse-fieldsets)
