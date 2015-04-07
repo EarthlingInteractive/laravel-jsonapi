@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v6.0.0
+------
+
+ 1. Fixed resource object to not return foreign keys (ie. author_id) if they are returned as part of the links object of the resource. 
+
 v5.0.0
 ------
 
