@@ -32,7 +32,7 @@ In few steps you can expose your models:
     In this example, we use a route for any OPTION requests, a generic route for interacting with resources, and another route for interacting with resource relationships:
 
     ```php
-    	Route::options('api/{model}/{id?}', 'ApiController@handleRequest');
+	Route::options('api/{model}/{id?}', 'ApiController@handleRequest');
 	Route::any('api/{model}/{id?}', 'ApiController@handleRequest');
 	Route::any('api/{model}/{id}/links/{relation}', 'ApiController@handleRequest');
     ```
@@ -148,21 +148,21 @@ In few steps you can expose your models:
 
 **Note:** Extend your models from `EarthlingInteractive\JsonApi\Model` rather than `Eloquent` to get the proper response for linked resources. In your model, you can define which relationships should be exposed: 
 
-    ```php
-    <?php namespace App\Models;
+```php
+	<?php namespace App\Models;
 
-    use EarthlingInteractive\JsonApi\Model as ApiModel;
-    
-    class User extends ApiModel {
+	use EarthlingInteractive\JsonApi\Model as ApiModel;
+	
+	class User extends ApiModel {
 		
-        public $exposedRelations = ['friends'];
-        
-        public function friends()
-        {
-            return $this->hasMany('App\Models\Friend');
-        }
-    }
-    ```
+		public $exposedRelations = ['friends'];
+	
+		public function friends()
+		{
+		    return $this->hasMany('App\Models\Friend');
+		}
+	}
+```
 
 Current features
 -----
@@ -171,9 +171,10 @@ According to [jsonapi.org](http://jsonapi.org):
 
 * [Resource Representations](http://jsonapi.org/format/#document-structure-resource-representations) as resource objects
 * [Resource Relationships](http://jsonapi.org/format/#document-structure-resource-relationships)
+* [Relationship URLs](http://jsonapi.org/format/#document-structure-resource-relationships)  e.g. /users/[id]/links/friends
 * [Compound Documents](http://jsonapi.org/format/#document-structure-compound-documents)
 * [Sorting](http://jsonapi.org/format/#fetching-sorting)
-* [Filtering](http://jsonapi.org/format/#fetching-filtering)
+* [Filtering](http://jsonapi.org/format/#fetching-filtering) (Note: Doesn't use FILTER keyword. An example: /users?name=Joe)
 * [Pagination](http://jsonapi.org/format/#fetching-pagination)
 
 The features in the Handler class are each in their own function (eg. handlePaginationRequest, handleSortRequest, etc.), so you can easily override them with your own behaviour if desired. 
@@ -182,7 +183,6 @@ The features in the Handler class are each in their own function (eg. handlePagi
 Wishlist
 -----
 
-* [Relationship URLs](http://jsonapi.org/format/#document-structure-resource-relationships)  e.g. /users/[id]/links/friends
 * [Resource URLs](http://jsonapi.org/format/#document-structure-resource-urls)
 * [Updating Relationships](http://jsonapi.org/format/#crud-updating-relationships)
 * [Sparse Fieldsets](http://jsonapi.org/format/#fetching-sparse-fieldsets)
