@@ -42,11 +42,13 @@ class Model extends \Eloquent
 
             if ($value instanceof BaseModel) {
                 $relations[$relation] = array('linkage' => array('id' => $value->getKey(), 'type' => $value->getTable()));
+				$this->hidden[] = $relation . '_id';
             } elseif ($value instanceof Collection) {
                 $relation = $relation;
                 $items = [];
                 foreach ($value as $item) {
                     $items[] = array('id' => $item->getKey(), 'type' => $item->getTable());
+					$this->hidden[] = $relation . '_id';
                 }
                 $relations[$relation] = array('linkage' => $items);
             }
