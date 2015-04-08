@@ -97,8 +97,11 @@ class Request
      * @param string $relation optional a name of a related resource to load
 	 * @param array  $fields optional list of specific fields to return in the results, keyed by type.
      */
-    public function __construct($url, $method, $id = null, $content = null, $include = [], $sort = [], $filter = [], $page = [], $relation = null, $fields = [])
-    {
+    public function __construct(
+      $url, $method, $id = null, $content = null,
+      array $include = [], array $sort = [], array $filter = [],
+      array $page = [], $relation = null, array $fields = []
+    ) {
         $this->url = $url;
         $this->method = $method;
         $this->id = $id;
