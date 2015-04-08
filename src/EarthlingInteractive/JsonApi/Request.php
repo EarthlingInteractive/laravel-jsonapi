@@ -110,7 +110,7 @@ class Request
         $this->sort = $sort ?: [];
         $this->filter = $filter ?: [];
         $this->relation = $relation;
-		$this->fields = $fields;
+        $this->fields = $fields;
 
         $pageSize = null;
         $pageNumber = null;
