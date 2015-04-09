@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v5.0.1
+------
+
+ 1. Added type hinting to Request constructor
+
 v5.0.0
 ------
 
