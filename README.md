@@ -61,13 +61,13 @@ In few steps you can expose your models:
 				if (class_exists($handlerClass)) {
 					$url = Request::url();
 					$method = Request::method();
-					$include = ($i = Request::input('include')) ? explode(',', $i) : $i;
-					$sort = ($i = Request::input('sort')) ? explode(',', $i) : $i;
+					$include = ($i = Request::input('include')) ? explode(',', $i) : [];
+					$sort = ($i = Request::input('sort')) ? explode(',', $i) : [];
 					$filter = ($i = Request::except('sort', 'include', 'page')) ? $i : [];
 					$content = Request::getContent();
-					
-					$page = Request::input('page');
-					if($page && (!is_array($page) || empty($page['size']) || empty($page['number']))) {
+
+					$page = ($i = Request::input('page')) ? $i : [];
+					if (!empty($page) && (!is_array($page) || empty($page['size']) || empty($page['number']))) {
 						return new ApiErrorResponse(400, 400, 'Expected page[size] and page[number]');
 					}
 
