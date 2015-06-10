@@ -282,13 +282,9 @@ abstract class Handler
      */
     protected static function getModelsForRelation($model, $relationKey)
     {
-        if (!method_exists($model, $relationKey)) {
-            throw new Exception(
-                    'Relation "' . $relationKey . '" does not exist in model',
-                    static::ERROR_SCOPE | static::ERROR_UNKNOWN_ID,
-                    BaseResponse::HTTP_INTERNAL_SERVER_ERROR
-                );
-        }
+        // Explicitly NOT checking if method_exists($model, $relationKey),
+        // since that prevents these things from being handled dynamically
+        // by __call.
         
         $relationModels = $model->{$relationKey};
         if (is_null($relationModels)) {
